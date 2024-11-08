@@ -45,9 +45,9 @@ Key steps in the methodology included:
 
 ## Visualizations
 The dashboard includes interactive visualizations such as:
-- A line chart showing the profile trend of spouse by country of origins over the years
+- A line chart showing the profile trend of spouse by major countries over the years
 - A bar  chart showing the top 5 country of origins of spouse nationalities over the years
-- A pie  chart showing the profile distribution of spouse nationality by country of origins over the years
+- A pie  chart showing the profile distribution of spouse nationality by major countries over the years
 
 These visualizations allow users to drill down into specific countries and time periods to explore the data in detail.
 
