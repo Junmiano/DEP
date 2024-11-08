@@ -89,6 +89,3 @@ This project is shared under the MIT License.
 ## Socials
 - **LinkedIn:** [https://www.linkedin.com/in/junmiano1202/](https://www.linkedin.com/in/junmiano1202/)
 - **GitHub:** [https://github.com/junmiano](https://github.com/junmiano)
-
-
-*/
