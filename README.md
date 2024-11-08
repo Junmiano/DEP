@@ -1,4 +1,3 @@
-/*
 # Statistical Profile of Spouses and Other Partners of Foreign Nationals (1989-2022)
 [Dataset Source](https://cfo.gov.ph/statistics-2/) 
 
