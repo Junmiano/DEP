@@ -212,8 +212,6 @@ with main_container:
 
                 # Fill NaN values with 0
                 boxplot_df = boxplot_df.fillna(0)
-                                # Fill NaN values with 0
-                boxplot_df = boxplot_df.fillna(0)
                 boxplot_df.columns = boxplot_df.columns.str.strip()
 
 
@@ -254,7 +252,7 @@ with main_container:
                 # Flatten the pivoted DataFrame
                 boxplot_flattened_df = boxplot_df.reset_index().melt(id_vars='Year', var_name='Country', value_name='Count')
 
-                st.dataframe(boxplot_flattened_df, use_container_width=True, selection_mode="multi-row")
+                # st.dataframe(boxplot_flattened_df, use_container_width=True, selection_mode="multi-row")
 
                 # Perform ANOVA
                 try:
