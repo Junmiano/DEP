@@ -78,7 +78,6 @@ Potential next steps for this project include:
 - Adding more related datasets to provide more context and related data.
 - Adding more visualizations and insights
 - Allow the user to upload the dataset
-- Monitoring of tool utilization for analytics purposes
 - Users feedback mechanism to help improve the service
 - Add an AI for the user to interact with the dataset like to create the visualization or just ask anything about the data itself.
   
