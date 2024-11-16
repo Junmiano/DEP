@@ -1,208 +1,286 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-from pandas import DataFrame
+import pandas as pd  # Import the pandas library for data manipulation
+import streamlit as st  # Import the streamlit library for creating web apps
+import plotly.express as px  # Import plotly.express for creating plots
+import plotly.graph_objects as go
+from   scipy.stats import f_oneway
+import os
 
+# Set page configuration
+st.set_page_config(
+    page_title="Foreign Spouse EDA",
+    page_icon=":bar_chart:",
+    layout="wide",
+    initial_sidebar_state="auto")
 
-@st.cache_data
-def load_data(filepath: str) -> DataFrame:
+# Apply custom CSS for theme
+st.markdown(
     """
-    Load data from a Excel file located at the specified filepath.
+    <style>
+    .css-18e3th9 {
+        background-color: #00b4d8;
+    }
+    .css-1d391kg {
+        background-color: #FFFFFF;
+    }
+    .css-1d391kg .css-1v3fvcr {
+        background-color: #F0F2F6;
+    }
+    .css-1d391kg .css-1v3fvcr .css-1v3fvcr {
+        color: #31333F;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-    Args:
-        filepath (str): The path to the Excel file to be loaded.
+# Your Streamlit app code here
+st.title("Foreign Spouse Exploratory Data analysis")
+st.caption("NUMBER OF FILIPINO SPOUSES AND OTHER PARTNERS OF FOREIGN NATIONALS BY MAJOR COUNTRY: 1989 - 2022")
 
-    Returns:
-        DataFrame: A DataFrame containing the loaded data, or an empty DataFrame if an error occurs.
+main_container =  st.container(border=True)
+with main_container:
+    # Load the Excel file into a DataFrame
+    excel_file = 'data\FS-1989-2022-by-MAJORCOUNTRY.xlsx'
+    df = pd.read_excel(excel_file, usecols='A:N', header=2, nrows=34,engine='openpyxl')
 
-    Raises:
-        FileNotFoundError: If the Excel file cannot be found at the specified path.
-        pd.errors.EmptyDataError: If the Excel file is empty.
-        Exception: For any other exceptions that may occur during file loading.
-    """
-    try:
-        data = pd.read_excel(filepath)
-        if data.empty:
-            st.error("No data found in the Excel file.", icon="🚨")
-        return data
-    except FileNotFoundError:
-        st.error(
-            f"File not found: {filepath}. Please check the file path.",
-            icon="🚨",
-        )
-    except pd.errors.EmptyDataError:
-        st.error("No data found in the Excel file.", icon="🚨")
-    except Exception as e:
-        st.error(f"An error occurred while loading the data: {e}", icon="🚨")
-    return pd.DataFrame()  # Return an empty DataFrame if any error occurs
+    # filling NaN values with 0
+    df['% Change'] = df['% Change'].fillna(0)
 
+    # Rename the YEAR Column name
+    df = df.rename(columns={'YEAR': 'Year'})
 
-def main():
-    st.set_page_config(layout="wide", page_icon="📊")
-    st.title("📊 GitHub Repository Analytics Dashboard", anchor=False)
+    # Get the number of results after applying the mask
+    profile = df.describe()
+    profile_tranposed = profile.transpose()
 
-    # Create tabs for different analytics views
-    tab1, tab2, tab3 = st.tabs(
-        ["⏰ Code Frequency", "📬 Commit Activity", "👩‍💻 Contributors"]
-    )
+    # Display the number of available results
+    profile_tranposed.iloc[0:0].reset_index(drop=True)
 
-    with tab1:
-        st.subheader("GitHub code change visualization")
-        st.info("Visualize code changes over time.", icon="ℹ️")
+    st.html('<h3>Data Analysis Process</h3>')
+    
+    dataset_container = st.container()
+    with dataset_container:
+        dataset_expander = st.expander("Dataset",expanded=False,icon=":material/database:")
+        with dataset_expander:
+            # Display a Dataframe
+            dataset_tab = st.tabs(["Dataset Source", "Dataset Profile"])
+            with dataset_tab[0]:
+                st.dataframe(df.style.highlight_max(axis=0), use_container_width=True)
+            with dataset_tab[1]:
+                st.dataframe(profile_tranposed.style.highlight_max(axis=0), use_container_width=True)
 
-        # Load and preprocess code frequency data
-        code_freq_data = load_data("data/streamlit_code_frequency_stats.csv")
-        code_freq_data["week"] = pd.to_datetime(
-            code_freq_data["week"], unit="s"
-        ).dt.date
+        yr = df['Year'].unique().tolist()
+        # Get the list of country names by excluding specific columns
+        country_names = [col for col in df.columns if col not in ['TOTAL', 'Year', '% Change']]
+        
+        chart_expander = st.expander("Chart Parameters",expanded=False,icon=":material/tune:")
+        with chart_expander:
 
-        with st.expander("Show raw data"):
-            st.dataframe(code_freq_data)
+            # Create a slider for selecting a range of years
+            yr_selection = st.slider('Year:', min_value=min(yr), max_value=max(yr), value=(min(yr), max(yr)))
 
-        # Implement a date range slider for selecting the period of interest
-        min_week = code_freq_data["week"].min()
-        max_week = code_freq_data["week"].max()
-        start_week, end_week = st.slider(
-            "Select Date Range",
-            min_value=min_week,
-            max_value=max_week,
-            value=(min_week, max_week),
-            format="MM/DD/YYYY",
-        )
+            # Create a multiselect for selecting countries
+            country_selection = st.multiselect('Select Country:', country_names, default=country_names)
 
-        # Filter data based on the selected date range
-        filtered_data = code_freq_data[
-            (code_freq_data["week"] >= start_week)
-            & (code_freq_data["week"] <= end_week)
-        ]
+        # Create a mask to filter the DataFrame based on the selected years and countries
+        mask = (df['Year'].between(*yr_selection)) & (df[country_selection].any(axis=1))
 
-        st.subheader("Weekly code changes comparison")
-        # Adjust deletions for visualization
-        filtered_data["positive_deletions"] = filtered_data["deletions"].abs()
+        # Group the filtered DataFrame by 'Year' and sum the selected countries' columns
+        df_grouped = df[mask].groupby(by=['Year']).sum()[country_selection]
+        df_grouped = df_grouped.reset_index()
 
-        # Display area chart for additions and deletions
-        st.area_chart(
-            filtered_data.set_index("week")[["additions", "deletions"]],
-            color=["#00FF00", "#FF0000"],
-        )
+        # List of columns to drop 
+        columns_to_drop = ['TOTAL', '% Change'] 
+        
+        # Drop the specified columns 
+        df = df.drop(columns=columns_to_drop)
 
-        # Display cumulative code changes over time
-        st.subheader("Cumulative code changes")
-        filtered_data["cumulative_additions"] = filtered_data["additions"].cumsum()
-        filtered_data["cumulative_deletions"] = filtered_data["deletions"].cumsum()
-        st.scatter_chart(
-            filtered_data.set_index("week")[
-                ["cumulative_additions", "cumulative_deletions"]
-            ]
-        )
+        # Reshape the DataFrame for plotting
+        df_melted = df_grouped.melt(id_vars=['Year'], value_vars=country_selection, var_name='Country', value_name='Count')
 
-    with tab2:
-        st.subheader("Total commits over the past year")
-        st.info("Track total number of commits.", icon="ℹ️")
+        # Replace all NaN values with 0 
+        df_melted.fillna(0, inplace=True)
 
-        commit_activity_data = load_data("data/streamlit_commit_activity_stats.csv")
-        commit_activity_data["week"] = pd.to_datetime(
-            commit_activity_data["week"], unit="s"
-        )
+        # Convert 'Year' to string
+        df_melted['Year'] = df_melted['Year'].astype(str)
+        
+        # Create bar chart
+        bar_chart = px.bar(df_melted,
+                    x='Year',
+                    y='Count',
+                    text='Count',
+                    color='Country',
+                    color_discrete_sequence=px.colors.qualitative.Plotly,
+                    template='plotly_white')
 
-        with st.expander("Show raw data"):
-            st.dataframe(commit_activity_data)
+        # Add a title to the chart
+        bar_chart.update_layout(title=f'Foreign Spouse Comparison by Country {min(yr_selection)} - {max(yr_selection)}')
+        
+        line_chart = px.line(df_melted,
+                        x='Year',
+                        y='Count',
+                        color='Country',
+                        hover_data={'Country': True, 'Count': True},  # Add hover text
+                        color_discrete_sequence=px.colors.qualitative.Plotly,
+                        template='plotly_white')
 
-        # Display metrics for commit activity
-        total_commits = commit_activity_data["total"].sum()
-        average_commits = commit_activity_data["total"].mean()
-        weekly_change = commit_activity_data["total"].pct_change().iloc[-1] * 100
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Total Commits", int(total_commits))
-        col2.metric("Average Weekly Commits", f"{average_commits:.2f}")
-        col3.metric("Week-over-Week Change", f"{weekly_change:.2f}%")
+        line_chart.update_traces(
+                hoverlabel=dict(
+                    bgcolor="#90e0ef",  # Background color
+                    font_size=14,       # Font size
+                    font_color="#0077b6",
+                    font_family="Calibri",  # Font family
+                    namelength=-1     # Prevents truncation of long names
+                )
+        )       
 
-        st.bar_chart(commit_activity_data.set_index("week")["total"])
+        # Update layout to make the bars non-stacked
+        line_chart.update_layout(title=f'Foreign Spouse Trend by Country {min(yr_selection)} - {max(yr_selection)}')
+        pie_chart = px.pie(df_melted,
+                    title=f'Distribution of Foreign Spouses {min(yr_selection)} - {max(yr_selection)}',
+                    values='Count',
+                    names='Country')
+                
+        chart_expander = st.expander("Visualization",expanded=False,icon=":material/key_visualizer:")
+        with chart_expander:
+            chart_tab = st.tabs(["Trends Chart", 
+                                 "Comparison Chart", 
+                                 "Distribution Chart", 
+                                 "Heatmap",
+                                 "Scatter",
+                                 "Boxplot",
+                                 "ANOVA"
+                                 ])
+            with chart_tab[0]:
+                st.plotly_chart(line_chart, use_container_width=True)
+            with chart_tab[1]:
+                st.plotly_chart(bar_chart,use_container_width=True)
+            with chart_tab[2]:
+                st.plotly_chart(pie_chart, use_container_width=True)
+            with chart_tab[3]:
+                
+                heatmap_pivot_df = df_melted.pivot(index='Country', columns='Year', values='Count')
 
-    with tab3:
-        st.subheader("Contributor analysis")
-        st.info("Analyze contributors and their activity.", icon="ℹ️")
+                # Fill NaN values with 0
+                heatmap_pivot_df = heatmap_pivot_df.fillna(0)
+                heatmap_pivot_df.columns = heatmap_pivot_df.columns.str.strip()
+                
+                heatmap_fig = go.Figure(data=go.Heatmap(
+                                z=heatmap_pivot_df.values,
+                                x=heatmap_pivot_df.columns,
+                                y=heatmap_pivot_df.index,
+                                colorscale='Viridis'))
 
-        # Load and preprocess contributor data
-        contributor_data = load_data("data/streamlit_contributor_stats.csv")
-        contributor_data.rename(
-            columns={"a": "additions", "d": "deletions", "c": "commits", "w": "date"},
-            inplace=True,
-        )
-        contributor_data["date"] = pd.to_datetime(contributor_data["date"], unit="s")
-
-        # Drop columns not needed for the analysis
-        columns_to_drop = [
-            "Unnamed: 0",
-            "author_node_id",
-            "author_avatar_url",
-            "author_gravatar_id",
-        ]
-        contributor_data = contributor_data.drop(
-            columns=columns_to_drop, errors="ignore"
-        )
-
-        with st.expander("Show raw data"):
-            st.dataframe(contributor_data)
-
-        # Calculate total activity for each contributor
-        contributor_data["total_activity"] = (
-            contributor_data["additions"]
-            + contributor_data["deletions"]
-            + contributor_data["commits"]
-        )
-
-        # Group by author to summarize total activity, sorted by activity level
-        activity_by_user = (
-            contributor_data.groupby("author_login")["total_activity"]
-            .sum()
-            .sort_values(ascending=False)
-        )
-        user_list = activity_by_user.index.tolist()
-        selected_user = st.selectbox("Select a User", user_list)
-
-        # Filter data for the selected user and adjust date range using a slider
-        user_data = contributor_data[contributor_data["author_login"] == selected_user]
-        min_date = user_data["date"].min().to_pydatetime()
-        max_date = user_data["date"].max().to_pydatetime()
-        start_date, end_date = st.slider(
-            "Select date range",
-            min_value=min_date,
-            max_value=max_date,
-            value=(min_date, max_date),
-            format="YYYY-MM-DD",
-        )
-        filtered_data = user_data[
-            (user_data["date"] >= start_date) & (user_data["date"] <= end_date)
-        ]
-
-        @st.experimental_fragment
-        def plot_chart() -> None:
-            """Plot data"""
-            fig = px.line(
-                filtered_data,
-                x="date",
-                y=["additions", "deletions", "commits"],
-                labels={
-                    "value": "Number of Contributions",
-                    "variable": "Type of Contribution",
-                },
-                title=f"Interactive Contributions of {selected_user} Over Time",
-            )
-            fig.update_traces(mode="lines+markers")
-
-            st.plotly_chart(fig, use_container_width=True)
-
-        chart, dataset = st.columns(2)
-
-        with chart:
-            st.subheader(f"Contributions over time for {selected_user}")
-            plot_chart()
-
-        with dataset:
-            st.subheader(f"Show filtered data for {selected_user}")
-            st.data_editor(filtered_data)
+                # Update layout for better visualization
+                heatmap_fig.update_layout(
+                    title=f'Heatmap of Count by Year and Country {min(yr_selection)} - {max(yr_selection)}',
+                    xaxis_title='Year',
+                    yaxis_title='Country'
+                )
+                st.plotly_chart(heatmap_fig, use_container_width=True)
+            with chart_tab[4]:
+                scatter_plot_df = df_melted.pivot(index='Country', columns='Year', values='Count')
 
 
-if __name__ == "__main__":
-    main()
+                # Flatten the pivoted DataFrame
+                scatter_flattened_df = scatter_plot_df.reset_index().melt(id_vars='Country', var_name='Year', value_name='Count')
+
+                # Create the scatter plot
+                scatter_fig = go.Figure()
+
+                for country in scatter_flattened_df['Country'].unique():
+                    country_data = scatter_flattened_df[scatter_flattened_df['Country'] == country]
+                    scatter_fig.add_trace(go.Scatter(
+                        x=country_data['Year'],
+                        y=country_data['Count'],
+                        mode='markers',
+                        name=country
+                    ))
+
+                # Update layout for better visualization
+                scatter_fig.update_layout(
+                    title=f'Scatter Plot of Count by Year and Country {min(yr_selection)} - {max(yr_selection)}',
+                    xaxis_title='Year',
+                    yaxis_title='Count'
+                )
+                st.plotly_chart(scatter_fig, use_container_width=True)
+            with chart_tab[5]:
+                
+                # Pivot the DataFrame
+                boxplot_df = df_melted.pivot(index='Year', columns='Country', values='Count')
+
+                # Fill NaN values with 0
+                boxplot_df = boxplot_df.fillna(0)
+                                # Fill NaN values with 0
+                boxplot_df = boxplot_df.fillna(0)
+                boxplot_df.columns = boxplot_df.columns.str.strip()
+
+
+                # Flatten the pivoted DataFrame
+                boxplot_flattened_df = boxplot_df.reset_index().melt(id_vars='Year', var_name='Country', value_name='Count')
+
+                # Create the box plot
+                box_fig = go.Figure()
+
+                for country in boxplot_flattened_df['Country'].unique():
+                    country_data = boxplot_flattened_df[boxplot_flattened_df['Country'] == country]
+                    box_fig.add_trace(go.Box(
+                        y=country_data['Count'],
+                        x=country_data['Year'].astype(str),  # Convert Year to string for better labeling
+                        name=country,
+                        boxmean=True  # Display mean in the box plot
+                    ))
+
+                # Update layout for better visualization
+                box_fig.update_layout(
+                    title=f'Box Plot of Count by Year and Country {min(yr_selection)} - {max(yr_selection)}',
+                    xaxis_title='Year',
+                    yaxis_title='Count'
+                )
+
+                # Display the box plot using Streamlit
+                st.plotly_chart(box_fig, use_container_width=True) 
+            with chart_tab[6]:
+
+                anova_df = df_melted.pivot(index='Year', columns='Country', values='Count')
+
+                # Fill NaN values with 0
+                boxplot_df = boxplot_df.fillna(0)
+
+                # Strip any leading/trailing spaces from column names
+                anova_df.columns = anova_df.columns.str.strip()
+
+                # Flatten the pivoted DataFrame
+                boxplot_flattened_df = boxplot_df.reset_index().melt(id_vars='Year', var_name='Country', value_name='Count')
+
+                st.dataframe(boxplot_flattened_df, use_container_width=True, selection_mode="multi-row")
+
+                # Perform ANOVA
+                try:
+                    anova_result = f_oneway(
+                        anova_df[anova_df['Country'] == 'USA']['Count'],
+                        anova_df[anova_df['Country'] == 'Canada']['Count']
+                    )
+                    # Create the box plot
+                    box_fig = go.Figure()
+
+                except KeyError as e:
+
+                    for country in boxplot_flattened_df['Country'].unique():
+                        country_data = boxplot_flattened_df[boxplot_flattened_df['Country'] == country]
+                        box_fig.add_trace(go.Box(
+                        y=country_data['Count'],
+                        x=country_data['Year'].astype(str),  # Convert Year to string for better labeling
+                        name=country,
+                        boxmean=True  # Display mean in the box plot
+                    ))
+                    
+                    # Update layout for better visualization
+                    box_fig.update_layout(
+                        title=f'Box Plot of Count by Year and Country {min(yr_selection)} - {max(yr_selection)}',
+                        xaxis_title='Year',
+                        yaxis_title='Count'
+                    )
+
+                # Display the box plot using Streamlit
+                st.plotly_chart(box_fig, use_container_width=True)
