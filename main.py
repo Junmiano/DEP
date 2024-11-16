@@ -165,7 +165,27 @@ with main_container:
                     title=f'Distribution of Foreign Spouses {min(yr_selection)} - {max(yr_selection)}',
                     values='Count',
                     names='Country')
-                
+        
+        # Update layout for better visualization
+        pie_chart.update_layout(
+                    title='Line Chart of Count by Year and Country',
+                    xaxis_title='Year',
+                    yaxis_title='Count',
+                    legend=dict(
+                    x=1,
+                    y=1,
+                    traceorder='normal',
+                    font=dict(
+                        family='calibri',
+                        size=12,
+                        color='black'
+                    ),
+                    bgcolor='#d9edf7',
+                bordercolor='LightSteelBlue',
+                borderwidth=1
+                )
+        )
+        
         chart_expander = st.expander("Visualization",expanded=False,icon=":material/key_visualizer:")
         with chart_expander:
             chart_tab = st.tabs(["Trends Chart", 
