@@ -115,7 +115,19 @@ with main_container:
                     template='plotly_white')
 
         # Add a title to the chart
-        bar_chart.update_layout(title=f'Foreign Spouse Comparison by Country {min(yr_selection)} - {max(yr_selection)}')
+        bar_chart.update_layout(title=f'Foreign Spouse Comparison by Country {min(yr_selection)} - {max(yr_selection)}'
+                    legend=dict(
+                        font=dict(
+                            family='calibri',
+                            size=12,
+                            color='black'
+                        ),
+                        bgcolor='#d9edf7',
+                        bordercolor='LightSteelBlue',
+                        borderwidth=1
+                    )                                                        
+                               
+        )
         
         line_chart = px.line(df_melted,
                         x='Year',
@@ -136,7 +148,19 @@ with main_container:
         )       
 
         # Update layout to make the bars non-stacked
-        line_chart.update_layout(title=f'Foreign Spouse Trend by Country {min(yr_selection)} - {max(yr_selection)}')
+        line_chart.update_layout(title=f'Foreign Spouse Trend by Country {min(yr_selection)} - {max(yr_selection)}',
+                    legend=dict(
+                        font=dict(
+                            family='calibri',
+                            size=12,
+                            color='black'
+                        ),
+                        bgcolor='#d9edf7',
+                        bordercolor='LightSteelBlue',
+                        borderwidth=1
+                    )                                                        
+        )
+
         pie_chart = px.pie(df_melted,
                     title=f'Distribution of Foreign Spouses {min(yr_selection)} - {max(yr_selection)}',
                     values='Count',
@@ -202,7 +226,17 @@ with main_container:
                 scatter_fig.update_layout(
                     title=f'Scatter Plot of Count by Year and Country {min(yr_selection)} - {max(yr_selection)}',
                     xaxis_title='Year',
-                    yaxis_title='Count'
+                    yaxis_title='Count',
+                    legend=dict(
+                        font=dict(
+                            family='calibri',
+                            size=12,
+                            color='black'
+                        ),
+                        bgcolor='#d9edf7',
+                        bordercolor='LightSteelBlue',
+                        borderwidth=1
+                    )                                                        
                 )
                 st.plotly_chart(scatter_fig, use_container_width=True)
             with chart_tab[5]:
