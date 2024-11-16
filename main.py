@@ -42,7 +42,7 @@ main_container =  st.container(border=True)
 with main_container:
     # Load the Excel file into a DataFrame
     excel_file = 'data\FS-1989-2022-by-MAJORCOUNTRY.xlsx'
-    df = pd.read_excel(excel_file, usecols='A:N', header=2, nrows=34, engine='openpyxl)
+    df = pd.read_excel(excel_file, usecols='A:N', header=2, nrows=34, engine='openpyxl')
 
     # filling NaN values with 0
     df['% Change'] = df['% Change'].fillna(0)
