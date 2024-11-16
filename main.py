@@ -241,6 +241,9 @@ with main_container:
                 st.plotly_chart(scatter_fig, use_container_width=True)
             with chart_tab[5]:
                  st.info('BOXPLOT is coming soon!',icon=':material/info:')  
+                 st.markdown('---')
             with chart_tab[6]:
-                 st.info('ANOVA is coming soon!',icon=':material/info:')  
+                 st.info('ANOVA is coming soon!',icon=':material/info:') 
+                 st.markdown('---')
+            st.info("Use the Chart Parameters to filter the dataset", icon=':material/info:')
 
