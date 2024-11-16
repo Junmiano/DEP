@@ -6,7 +6,7 @@
 - `author`: Jun Miano
 - `location`: Davao City, Philippines,8000
 - `date_created`: 2024-11-11
-- `last_updated`: 2024-11-11
+- `last_updated`: 2024-11-16
 - `version`: v1.0
 - `status`: "In-Progress"
   
@@ -68,7 +68,7 @@ Streamlit App: You can explore the dashboard live at the following link:
 - Built-in zooming of the chart
 
 ## Challenges and Solutions
-As a beginner in Python, I struggled how to do task at first. I started with doing CHOP methodology as it is fondly called as Chat Oriented Programming (CHOP) with an AI. I did a lot of prompting on how to do it step by step. I was able to do the dataset preparation for visualization and analysis by first uploading the dataset in to Pandas Dataframe then extract the relevant data, make sure there is no missing value and of the correct data type (Inferencing). The dataset was then reshaped (unpivotting) into a long format and assigned proper headers for the dataframe. The dataset is then ready for visualization and analysis. Lastly, with some google searches and watching YouTube video tutorials, I was able to deploy the dashboard to Streamlit.
+As a beginner in Python, I struggled how to do task at first. I started with doing CHOP methodology as it is fondly called as Chat Oriented Programming (CHOP) with an AI. I did a lot of prompting on how to do it step by step. Had I learned good prompting, it would not take time to get the Python code I need to develop the tool. I was able to do the dataset preparation for visualization and analysis by first uploading the dataset in to Pandas Dataframe then I extracted the relevant data, make sure there is no missing value and of the correct data type (Inferencing). The dataset was then reshaped (unpivotting) into a long format and assigned proper headers for the dataframe. The dataset is then ready for visualization and analysis. Lastly, with some google searches and watching YouTube video tutorials, I was able to deploy the dashboard to Streamlit.
 
 ## Community Impact
 This dashboard provides a valuable tool for researchers, policymakers, and the general public to understand the trends, Distribution Spouse profiles by country of origin. It can inform policy decisions, aid in demographic studies, and raise awareness about migration patterns.
@@ -79,6 +79,7 @@ Potential next steps for this project include:
 - Adding more visualizations and insights 
 - Monitoring of tool utilization for analytics purposes
 - Users feedback mechanism to help improve the service
+- Add an AI for the user to interact with the dataset like to create the visualization or just ask anything about the data itself.
   
 ## Contributors
 - Jun Miano
