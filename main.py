@@ -115,7 +115,7 @@ with main_container:
                     template='plotly_white')
 
         # Add a title to the chart
-        bar_chart.update_layout(title=f'Foreign Spouse Comparison by Country {min(yr_selection)} - {max(yr_selection)}'
+        bar_chart.update_layout(title=f'Foreign Spouse Comparison by Country {min(yr_selection)} - {max(yr_selection)}',
                     legend=dict(
                         font=dict(
                             family='calibri',
