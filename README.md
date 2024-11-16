@@ -55,7 +55,7 @@ The project's code is available in the following repository:
 - [Foreign Spouse Nationality Dashboard](https://github.com/Junmiano/DEP/blob/main/README.md)
 
 Streamlit App: You can explore the dashboard live at the following link:
-- [Foreign Spouse Nationality Dashboard - Streamlit](https://spouse-profile-dashboard.streamlit.app/)
+- [Foreign Spouse Nationality Dashboard - Streamlit](https://foreign-spouse.streamlit.app/)
 
 ## Features
 - Uploading of dataset for processing
